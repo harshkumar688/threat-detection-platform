@@ -1,0 +1,2 @@
+# Multi-camera stream coordination
+

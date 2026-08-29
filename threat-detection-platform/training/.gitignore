@@ -1,0 +1,21 @@
+# Training outputs (large)
+runs/
+wandb/
+
+# Datasets (large)
+datasets/*/train/
+datasets/*/val/
+datasets/*/test/
+!datasets/README.md
+!datasets/.gitkeep
+!datasets/*/data.yaml
+
+# Checkpoints
+*.pt
+*.onnx
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/

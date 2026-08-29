@@ -1,0 +1,83 @@
+# =============================================================================
+# Training Configuration - YOLOv8 Medium (Weapon Detection)
+# =============================================================================
+# This file defines a complete, reproducible training experiment.
+# Modify parameters as needed for your hardware and dataset.
+
+# --- Experiment Metadata ---
+experiment:
+  name: "weapon_det_yolov8m_v1"
+  description: "Weapon detection fine-tuning on custom dataset"
+  author: "Threat Detection Platform"
+  tags: ["weapon", "yolov8m", "fine-tune"]
+
+# --- Dataset ---
+dataset:
+  data_yaml: "datasets/weapon_detection/data.yaml"
+  # If your data.yaml uses relative paths, set this to resolve them:
+  # root_override: "/absolute/path/to/training"
+
+# --- Model ---
+model:
+  # Base model (Ultralytics pretrained on COCO)
+  base: "yolov8m.pt"
+  # Number of classes (must match data.yaml nc)
+  nc: 4
+
+# --- Training Hyperparameters ---
+training:
+  epochs: 100
+  batch_size: 16          # Reduce if GPU OOM (try 8 or 4)
+  imgsz: 640             # Input resolution (square)
+  optimizer: "auto"       # auto, SGD, Adam, AdamW
+  lr0: 0.01              # Initial learning rate
+  lrf: 0.01              # Final learning rate (lr0 * lrf)
+  momentum: 0.937        # SGD momentum / Adam beta1
+  weight_decay: 0.0005
+  warmup_epochs: 3.0
+  warmup_momentum: 0.8
+  warmup_bias_lr: 0.1
+
+  # Augmentation
+  augmentation:
+    hsv_h: 0.015         # HSV-Hue augmentation
+    hsv_s: 0.7           # HSV-Saturation augmentation
+    hsv_v: 0.4           # HSV-Value augmentation
+    degrees: 0.0         # Rotation (+/- degrees)
+    translate: 0.1       # Translation (+/- fraction)
+    scale: 0.5           # Scale (+/- gain)
+    shear: 0.0           # Shear (+/- degrees)
+    perspective: 0.0     # Perspective (+/- fraction)
+    flipud: 0.0          # Vertical flip probability
+    fliplr: 0.5          # Horizontal flip probability
+    mosaic: 1.0          # Mosaic augmentation probability
+    mixup: 0.0           # MixUp augmentation probability
+    copy_paste: 0.0      # Copy-paste augmentation probability
+
+  # Early stopping
+  patience: 20           # Epochs to wait before early stop (0 = disabled)
+
+  # Loss weights
+  box: 7.5               # Box loss weight
+  cls: 0.5               # Classification loss weight
+  dfl: 1.5               # Distribution focal loss weight
+
+# --- Hardware ---
+hardware:
+  device: "auto"          # auto, cpu, 0, 0,1 (multi-GPU)
+  workers: 8              # DataLoader workers
+  amp: true               # Automatic Mixed Precision (FP16)
+
+# --- Output ---
+output:
+  project: "runs"         # Output directory
+  exist_ok: false         # Overwrite existing experiment
+  save_period: 10         # Save checkpoint every N epochs (-1 = disabled)
+  plots: true             # Generate training plots
+  save_json: true         # Save results in COCO JSON format
+
+# --- Evaluation ---
+evaluation:
+  conf_threshold: 0.25    # Confidence threshold for evaluation
+  iou_threshold: 0.5      # IoU threshold for mAP computation
+  max_det: 300            # Maximum detections per image

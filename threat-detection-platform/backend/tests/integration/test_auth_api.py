@@ -1,0 +1,2 @@
+# Integration tests: auth endpoints
+

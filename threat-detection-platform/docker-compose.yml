@@ -1,0 +1,121 @@
+# =============================================================================
+# AI-Based Real-Time Threat Detection Platform
+# Docker Compose - Core Infrastructure
+# =============================================================================
+# This file defines the infrastructure services needed for development.
+# The detection service is excluded until the AI module is implemented.
+#
+# Usage:
+#   docker-compose up -d          (start services)
+#   docker-compose down            (stop services)
+#   docker-compose logs -f         (tail all logs)
+# =============================================================================
+
+version: "3.8"
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: threat-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-threat_detection}
+      POSTGRES_USER: ${POSTGRES_USER:-threat_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev_password_change_in_production}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./config/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-threat_user} -d ${POSTGRES_DB:-threat_detection}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - threat-net
+
+  # ---------------------------------------------------------------------------
+  # Redis (Cache + Pub/Sub + Message Broker)
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: threat-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./config/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - threat-net
+
+  # ---------------------------------------------------------------------------
+  # Backend API (FastAPI) - Development Mode
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: threat-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+      - evidence_data:/app/evidence
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - threat-net
+
+  # ---------------------------------------------------------------------------
+  # Frontend (React) - Development Mode (Vite Dev Server)
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: threat-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - threat-net
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  pgdata:
+    driver: local
+  evidence_data:
+    driver: local
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  threat-net:
+    driver: bridge

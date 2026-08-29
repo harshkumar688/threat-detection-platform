@@ -1,0 +1,2 @@
+# Integration tests: incident endpoints
+

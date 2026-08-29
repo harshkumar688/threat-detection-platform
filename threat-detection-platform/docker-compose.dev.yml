@@ -1,0 +1,14 @@
+# =============================================================================
+# Docker Compose - Development Overrides
+# =============================================================================
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+#
+# This file is reserved for future use when production docker-compose.yml
+# is separated from development configuration.
+# Currently, the main docker-compose.yml is configured for development.
+# =============================================================================
+
+version: "3.8"
+
+# No overrides needed - main file is already in dev mode
+services: {}

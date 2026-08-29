@@ -1,0 +1,43 @@
+# =============================================================================
+# Training Configuration - YOLOv8 Nano (Quick Test)
+# =============================================================================
+# Lightweight config for testing the pipeline. Not for production.
+
+experiment:
+  name: "weapon_det_yolov8n_quick"
+  description: "Quick pipeline validation run with nano model"
+  tags: ["test", "yolov8n", "quick"]
+
+dataset:
+  data_yaml: "datasets/weapon_detection/data.yaml"
+
+model:
+  base: "yolov8n.pt"
+  nc: 4
+
+training:
+  epochs: 10
+  batch_size: 8
+  imgsz: 320
+  optimizer: "auto"
+  lr0: 0.01
+  lrf: 0.01
+  patience: 5
+  augmentation:
+    mosaic: 1.0
+    fliplr: 0.5
+    scale: 0.5
+
+hardware:
+  device: "auto"
+  workers: 4
+  amp: true
+
+output:
+  project: "runs"
+  save_period: -1
+  plots: true
+
+evaluation:
+  conf_threshold: 0.25
+  iou_threshold: 0.5

@@ -1,0 +1,43 @@
+# =============================================================================
+# Backend - Production Dependencies
+# =============================================================================
+# Install: pip install -r requirements.txt
+
+# Web Framework
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9
+
+# Database (async PostgreSQL)
+sqlalchemy[asyncio]>=2.0.30
+asyncpg>=0.29.0
+alembic>=1.13.0
+
+# Validation & Configuration
+pydantic>=2.7.0
+pydantic-settings>=2.3.0
+
+# Authentication (JWT + password hashing)
+python-jose[cryptography]>=3.3.0
+passlib>=1.7.4
+bcrypt>=4.0.0
+
+# Redis
+redis>=5.0.0
+
+# WebSocket
+websockets>=12.0
+
+# Image Processing
+Pillow>=10.0.0
+numpy>=1.24.0
+opencv-python-headless==4.10.0.84
+
+# HTTP Client
+httpx>=0.27.0
+
+# Structured Logging
+structlog>=24.0.0
+
+# Utilities
+python-dateutil>=2.9.0

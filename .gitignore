@@ -1,0 +1,105 @@
+# =============================================================================
+# Threat Detection Platform - Root .gitignore
+# =============================================================================
+# This is the repository root (one level above threat-detection-platform/).
+# threat-detection-platform/.gitignore covers project-specific generated
+# files in more detail; this file covers the workspace root and anything
+# that applies repo-wide.
+
+# -----------------------------------------------------------------------------
+# Environment variables / secrets
+# -----------------------------------------------------------------------------
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+!**/.env.example
+*.pem
+*.key
+*.p12
+*credentials*.json
+*secret*
+
+# -----------------------------------------------------------------------------
+# Python
+# -----------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+*/venv/
+*/.venv/
+*.egg-info/
+.eggs/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# -----------------------------------------------------------------------------
+# Node / Frontend
+# -----------------------------------------------------------------------------
+node_modules/
+dist/
+build/
+.next/
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.vite/
+
+# -----------------------------------------------------------------------------
+# IDE / Editor
+# -----------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# -----------------------------------------------------------------------------
+# Operating System
+# -----------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# -----------------------------------------------------------------------------
+# Logs / runtime / generated
+# -----------------------------------------------------------------------------
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+
+# -----------------------------------------------------------------------------
+# Local databases
+# -----------------------------------------------------------------------------
+*.sqlite
+*.sqlite3
+*.db
+pgdata/
+
+# -----------------------------------------------------------------------------
+# AI model weights (large binaries — tracked via README/instructions instead)
+# -----------------------------------------------------------------------------
+*.pt
+*.onnx
+*.engine
+*.tflite
+*.h5
+!**/models/README.md
+!**/models/.gitkeep

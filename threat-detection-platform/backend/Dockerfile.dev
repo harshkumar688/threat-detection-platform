@@ -1,0 +1,29 @@
+# =============================================================================
+# Backend Dockerfile - Development (hot-reload)
+# =============================================================================
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# System dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Python dependencies (production + dev/test)
+COPY requirements.txt requirements-dev.txt ./
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt -r requirements-dev.txt
+
+# Application code (will be overridden by volume mount in dev)
+COPY app/ app/
+COPY alembic.ini .
+COPY alembic/ alembic/
+
+# Create required directories
+RUN mkdir -p /app/evidence /app/logs
+
+EXPOSE 8000
+
+# Dev server with hot-reload
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
