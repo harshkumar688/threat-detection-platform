@@ -28,7 +28,7 @@ The repository is abstract — can be backed by:
 
 from .models import Incident, IncidentStatus, IncidentCreate, IncidentUpdate, AuditEntry
 from .service import IncidentService
-from .repository import IncidentRepository, InMemoryIncidentRepository
+from .repository import IncidentRepository, InMemoryIncidentRepository, SqlIncidentRepository
 
 __all__ = [
     "Incident",
@@ -39,4 +39,5 @@ __all__ = [
     "IncidentService",
     "IncidentRepository",
     "InMemoryIncidentRepository",
+    "SqlIncidentRepository",
 ]

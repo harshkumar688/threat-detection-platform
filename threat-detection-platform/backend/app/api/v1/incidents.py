@@ -27,6 +27,7 @@ from app.incidents import (
     IncidentStatus,
     IncidentUpdate,
     InMemoryIncidentRepository,
+    SqlIncidentRepository,
 )
 from app.incidents.exceptions import (
     DuplicateIncidentError,
@@ -43,8 +44,20 @@ from app.schemas.incident import (
 
 router = APIRouter(prefix="/incidents", tags=["Incidents"])
 
-# Service instance (in production, injected via Depends with DB session)
-_repo = InMemoryIncidentRepository()
+# Repository selection:
+#   USE_DATABASE=false -> in-memory (fast, ephemeral; used by the test suite)
+#   otherwise          -> durable SQL store (SQLite by default) so incidents
+#                         survive backend restarts.
+import os as _os
+
+
+def _build_incident_repo():
+    if _os.getenv("USE_DATABASE", "true").lower() in ("0", "false", "no"):
+        return InMemoryIncidentRepository()
+    return SqlIncidentRepository()
+
+
+_repo = _build_incident_repo()
 _service = IncidentService(_repo)
 
 

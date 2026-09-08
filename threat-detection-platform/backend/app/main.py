@@ -24,10 +24,19 @@ from app.core.exceptions import register_exception_handlers
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan: startup and shutdown events."""
+    import os
+
     settings = get_settings()
     print(f"[STARTUP] {settings.app_name} v{settings.app_version}")
     print(f"[STARTUP] Debug mode: {settings.backend_debug}")
     print(f"[STARTUP] API docs: http://{settings.backend_host}:{settings.backend_port}/docs")
+
+    # Initialize the database (create tables if missing) unless disabled.
+    if os.getenv("USE_DATABASE", "true").lower() not in ("0", "false", "no"):
+        from app.db import get_database_url, init_db
+
+        await init_db()
+        print(f"[STARTUP] Database ready: {get_database_url()}")
 
     yield
 
