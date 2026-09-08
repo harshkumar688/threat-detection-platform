@@ -20,7 +20,7 @@ Security guarantees:
 
 from .models import User, UserRole, Permission
 from .permissions import PERMISSION_MATRIX, has_permission
-from .repository import UserRepository, InMemoryUserRepository
+from .repository import UserRepository, InMemoryUserRepository, SqlUserRepository
 from .service import AuthService
 from .audit import AuthAuditLog, AuditAction
 
@@ -32,6 +32,7 @@ __all__ = [
     "has_permission",
     "UserRepository",
     "InMemoryUserRepository",
+    "SqlUserRepository",
     "AuthService",
     "AuthAuditLog",
     "AuditAction",

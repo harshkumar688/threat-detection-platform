@@ -57,6 +57,8 @@ from .repository import (
     InMemoryCameraRepository,
     InMemoryLocationRepository,
     LocationRepository,
+    SqlCameraRepository,
+    SqlLocationRepository,
 )
 from .service import CameraService, LocationService
 
@@ -81,6 +83,8 @@ __all__ = [
     "InMemoryCameraRepository",
     "InMemoryLocationRepository",
     "LocationRepository",
+    "SqlCameraRepository",
+    "SqlLocationRepository",
     "CameraService",
     "LocationService",
 ]

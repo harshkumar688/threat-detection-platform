@@ -27,6 +27,7 @@ from app.cameras import (
     CameraStatus,
     CameraUpdate,
     InMemoryCameraRepository,
+    SqlCameraRepository,
 )
 from app.cameras.exceptions import (
     CameraNotFoundError,
@@ -40,10 +41,8 @@ from app.schemas.camera import CameraUpdate as CameraUpdateSchema
 
 router = APIRouter(prefix="/cameras", tags=["Cameras"])
 
-# Service instance (in production, injected via Depends with a DB session).
-# Shares the location repository with the locations router so both operate
-# on the same underlying location store.
-_camera_repo = InMemoryCameraRepository()
+import os as _os
+_camera_repo = InMemoryCameraRepository() if _os.getenv("USE_DATABASE", "true").lower() in ("0", "false", "no") else SqlCameraRepository()
 
 
 def _build_camera_service() -> CameraService:

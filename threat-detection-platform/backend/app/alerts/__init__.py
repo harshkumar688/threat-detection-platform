@@ -54,7 +54,7 @@ from .models import (
     NotificationStatus,
     is_valid_alert_transition,
 )
-from .repository import AlertRepository, InMemoryAlertRepository
+from .repository import AlertRepository, InMemoryAlertRepository, SqlAlertRepository
 from .service import AlertService, risk_level_to_alert_severity
 
 __all__ = [
@@ -77,6 +77,7 @@ __all__ = [
     "is_valid_alert_transition",
     "AlertRepository",
     "InMemoryAlertRepository",
+    "SqlAlertRepository",
     "AlertService",
     "risk_level_to_alert_severity",
 ]

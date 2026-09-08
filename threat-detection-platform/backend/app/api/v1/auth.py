@@ -19,7 +19,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Request, status
 
 from app.api.deps import CurrentUser, get_current_user
-from app.auth import AuthAuditLog, AuthService, InMemoryUserRepository, UserRole
+from app.auth import AuthAuditLog, AuthService, InMemoryUserRepository, SqlUserRepository, UserRole
 from app.auth.service import (
     AccountDeactivatedError,
     AccountLockedError,
@@ -38,46 +38,59 @@ from app.schemas.auth import (
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-# Service instance (in production, injected via Depends with a real DB-backed repository)
-_repo = InMemoryUserRepository()
+import os as _os
+_repo = (
+    InMemoryUserRepository()
+    if _os.getenv("USE_DATABASE", "true").lower() in ("0", "false", "no")
+    else SqlUserRepository()
+)
 _audit = AuthAuditLog()
 _service = AuthService(_repo, _audit)
 
 
-def _seed_admin() -> None:
+async def seed_admin_user() -> None:
     """
-    Seed the default administrator account on startup.
+    Seed the default administrator account. Called by app lifespan AFTER
+    init_db() so the database table exists. Idempotent — does nothing if the
+    admin user already exists.
+    """
+    settings = get_settings()
+    existing = await _repo.get_by_email(settings.admin_email)
+    if existing is None:
+        await _service.register(
+            email=settings.admin_email,
+            password=settings.admin_password,
+            full_name=settings.admin_full_name,
+            role=UserRole.ADMIN,
+        )
 
-    Credentials are loaded from environment variables (ADMIN_EMAIL,
-    ADMIN_PASSWORD, ADMIN_FULL_NAME via app.core.config.Settings) rather
-    than hardcoded, so deployments can — and must — override the
-    placeholder development defaults.
+
+def _seed_admin_sync() -> None:
+    """
+    Sync shim — only used when running without a database (in-memory path,
+    tests, or first-boot before lifespan fires). Not called when USE_DATABASE
+    is true because lifespan handles seeding there.
     """
     import asyncio
+    import os
 
-    settings = get_settings()
+    if os.getenv("USE_DATABASE", "true").lower() not in ("0", "false", "no"):
+        return  # Deferred to lifespan; DB not ready here
 
-    async def _do_seed():
-        existing = await _repo.get_by_email(settings.admin_email)
-        if existing is None:
-            await _service.register(
-                email=settings.admin_email,
-                password=settings.admin_password,
-                full_name=settings.admin_full_name,
-                role=UserRole.ADMIN,
-            )
+    async def _do():
+        await seed_admin_user()
 
     try:
         loop = asyncio.get_event_loop()
         if loop.is_running():
-            asyncio.create_task(_do_seed())
+            asyncio.create_task(_do())
         else:
-            loop.run_until_complete(_do_seed())
+            loop.run_until_complete(_do())
     except RuntimeError:
-        asyncio.run(_do_seed())
+        asyncio.run(_do())
 
 
-_seed_admin()
+_seed_admin_sync()
 
 
 def _user_to_response(user) -> UserResponse:

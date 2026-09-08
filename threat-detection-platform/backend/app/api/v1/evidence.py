@@ -35,17 +35,22 @@ from app.evidence import (
     EvidenceService,
     EvidenceStorage,
     InMemoryEvidenceRepository,
+    SqlEvidenceRepository,
 )
 from app.privacy import PrivacyConfig
 from app.schemas.evidence import EvidenceListResponse, EvidenceResponse
 
 router = APIRouter(prefix="/evidence", tags=["Evidence"])
 
-# Service instance (in production, injected via Depends with DB session + real storage path)
+import os as _os
 _config = EvidenceConfig()
 _storage = EvidenceStorage(_config)
 _storage.initialize()
-_repo = InMemoryEvidenceRepository()
+_repo = (
+    InMemoryEvidenceRepository()
+    if _os.getenv("USE_DATABASE", "true").lower() in ("0", "false", "no")
+    else SqlEvidenceRepository()
+)
 _privacy_config = PrivacyConfig()
 _audit_log = EvidenceAuditLog()
 _service = EvidenceService(

@@ -33,9 +33,11 @@ async def lifespan(app: FastAPI):
 
     # Initialize the database (create tables if missing) unless disabled.
     if os.getenv("USE_DATABASE", "true").lower() not in ("0", "false", "no"):
+        from app.api.v1.auth import seed_admin_user
         from app.db import get_database_url, init_db
 
         await init_db()
+        await seed_admin_user()
         print(f"[STARTUP] Database ready: {get_database_url()}")
 
     yield

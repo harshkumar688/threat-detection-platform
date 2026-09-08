@@ -24,6 +24,7 @@ from app.cameras import (
     LocationCreate,
     LocationService,
     LocationUpdate,
+    SqlLocationRepository,
 )
 from app.cameras.exceptions import (
     DuplicateLocationNameError,
@@ -37,9 +38,12 @@ from app.schemas.camera import LocationUpdate as LocationUpdateSchema
 
 router = APIRouter(prefix="/locations", tags=["Locations"])
 
-# Shared repository instance — imported by app/api/v1/cameras.py so both
-# routers (and CameraService's location validation) see the same data.
-_location_repo = InMemoryLocationRepository()
+import os as _os
+_location_repo = (
+    InMemoryLocationRepository()
+    if _os.getenv("USE_DATABASE", "true").lower() in ("0", "false", "no")
+    else SqlLocationRepository()
+)
 _location_service = LocationService(_location_repo)
 
 

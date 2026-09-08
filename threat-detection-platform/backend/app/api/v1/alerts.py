@@ -26,6 +26,7 @@ from app.alerts import (
     AlertService,
     AlertStatus,
     InMemoryAlertRepository,
+    SqlAlertRepository,
     NotificationDispatcher,
 )
 from app.alerts.exceptions import AlertNotFoundError, InvalidAlertTransitionError
@@ -49,11 +50,13 @@ from app.schemas.base import PaginatedResponse, PaginationMeta, PaginationParams
 
 router = APIRouter(prefix="/alerts", tags=["Alerts"])
 
-# Service instance (in production, injected via Depends with a real DB-backed
-# repository). Shared module-level instances so the same alert store is used
-# across requests, matching the pattern used by incidents/evidence/auth.
+import os as _os
 _config = AlertConfig()
-_repo = InMemoryAlertRepository()
+_repo = (
+    InMemoryAlertRepository()
+    if _os.getenv("USE_DATABASE", "true").lower() in ("0", "false", "no")
+    else SqlAlertRepository()
+)
 _providers = build_providers_from_config(_config)
 _dispatcher = NotificationDispatcher(_config, _providers, _repo)
 _service = AlertService(_config, _repo, _dispatcher)
