@@ -129,10 +129,37 @@ class FrameResult:
         }
 
 
-# Weapon class names (configurable, but these are the defaults)
-WEAPON_CLASSES = frozenset({"handgun", "rifle", "knife", "gun", "pistol", "weapon"})
+# Weapon class names.
+#
+# These are the DEFAULT class names treated as weapons. They cover the
+# labels emitted by the common public weapon-detection YOLO models
+# (gun/pistol/handgun/rifle/firearm for firearms; knife for blades) so that
+# whichever compatible model is dropped in via DETECTION_MODEL_PATH, its
+# weapon detections are flagged correctly by the downstream pipeline.
+#
+# This set is OVERRIDABLE at runtime via the DETECTION_WEAPON_CLASSES
+# environment variable (comma-separated), so no model-specific assumption is
+# hard-coded — matching the project's "configuration over hard-coding" rule.
+import os as _os
+
+_DEFAULT_WEAPON_CLASSES = {
+    # Firearms (various models use different label strings for the same thing)
+    "handgun", "gun", "pistol", "rifle", "firearm", "weapon",
+    # Blades
+    "knife",
+}
+
+
+def _load_weapon_classes() -> frozenset:
+    override = _os.getenv("DETECTION_WEAPON_CLASSES", "").strip()
+    if override:
+        return frozenset(c.strip().lower() for c in override.split(",") if c.strip())
+    return frozenset(_DEFAULT_WEAPON_CLASSES)
+
+
+WEAPON_CLASSES = _load_weapon_classes()
 
 
 def is_weapon_class(class_name: str) -> bool:
-    """Determine if a class name represents a weapon."""
+    """Determine if a class name represents a weapon (case-insensitive)."""
     return class_name.lower() in WEAPON_CLASSES

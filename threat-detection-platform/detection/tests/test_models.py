@@ -177,3 +177,39 @@ class TestIsWeaponClass:
     def test_gun_variant(self):
         assert is_weapon_class("gun") is True
         assert is_weapon_class("pistol") is True
+
+    def test_firearm_variant(self):
+        # Covers label strings used by common public weapon-detection models.
+        assert is_weapon_class("firearm") is True
+        assert is_weapon_class("weapon") is True
+
+
+class TestConfigurableWeaponClasses:
+    """The weapon-class set is overridable via DETECTION_WEAPON_CLASSES."""
+
+    def test_env_override_replaces_defaults(self, monkeypatch):
+        import importlib
+
+        import src.models as models_module
+
+        monkeypatch.setenv("DETECTION_WEAPON_CLASSES", "machete,taser")
+        importlib.reload(models_module)
+        try:
+            assert models_module.is_weapon_class("machete") is True
+            assert models_module.is_weapon_class("taser") is True
+            # Defaults are replaced (not merged) when an override is provided.
+            assert models_module.is_weapon_class("handgun") is False
+        finally:
+            # Restore default behavior for any subsequent tests.
+            monkeypatch.delenv("DETECTION_WEAPON_CLASSES", raising=False)
+            importlib.reload(models_module)
+
+    def test_defaults_used_when_no_env(self, monkeypatch):
+        import importlib
+
+        import src.models as models_module
+
+        monkeypatch.delenv("DETECTION_WEAPON_CLASSES", raising=False)
+        importlib.reload(models_module)
+        assert models_module.is_weapon_class("knife") is True
+        assert models_module.is_weapon_class("handgun") is True
